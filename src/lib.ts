@@ -1,5 +1,11 @@
-import { MatrixClient, AdminApis } from "matrix-bot-sdk";
+import { MatrixClient, AdminApis, LogService, ILogger } from "matrix-bot-sdk";
 
+const DummyLogger = {
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    debug: () => {},
+};
 /**
  * This class provides a "one stop shop" to determine if a user is online. It will use a combination of a 
  * local cache, presence endpoints and admin APIs in that order.
@@ -8,7 +14,8 @@ export class MatrixActivityTracker {
     private client: MatrixClient;
     private lastActiveTime: Map<string, number>;
     private canUseWhois: boolean|null = null;
-    constructor(homeserverUrl: string, accessToken: string, private serverName: string, private canUsePresence: boolean = true) {
+    constructor(homeserverUrl: string, accessToken: string, private serverName: string, private canUsePresence: boolean = true, logger: ILogger = DummyLogger) {
+        LogService.setLogger(logger);
         this.client = new MatrixClient(homeserverUrl, accessToken);
         this.lastActiveTime = new Map();
     }
