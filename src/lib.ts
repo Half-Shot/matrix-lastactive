@@ -3,7 +3,8 @@ import { MatrixClient, AdminApis } from "matrix-bot-sdk";
 export class MatrixActivityTracker {
     private client: MatrixClient;
     private lastActiveTime: Map<string, number>;
-    constructor(homeserverUrl: string, accessToken: string, private serverName: string, private canUsePresence: boolean = true, private canUseWhois: boolean = true) {
+    private canUseWhois: boolean|null = null;
+    constructor(homeserverUrl: string, accessToken: string, private serverName: string, private canUsePresence: boolean = true) {
         this.client = new MatrixClient(homeserverUrl, accessToken);
         this.lastActiveTime = new Map();
     }
@@ -13,6 +14,15 @@ export class MatrixActivityTracker {
     }
 
     public async isUserOnline(userId: string, maxTimeMs: number): Promise<{offline: boolean, inactiveMs: number}> {
+        if (this.canUseWhois === null) {
+            try {
+                await this.client.doRequest("GET", "/_synapse/admin/v1/server_version");
+                this.canUseWhois = true;
+            } catch (ex) {
+                this.canUseWhois = false;
+            }
+        }
+
         // First, check if the user has bumped recently.
         const now = Date.now();
         const lastActiveTime = this.lastActiveTime.get(userId);
