@@ -1,5 +1,9 @@
 import { MatrixClient, AdminApis } from "matrix-bot-sdk";
 
+/**
+ * This class provides a "one stop shop" to determine if a user is online. It will use a combination of a 
+ * local cache, presence endpoints and admin APIs in that order.
+ */
 export class MatrixActivityTracker {
     private client: MatrixClient;
     private lastActiveTime: Map<string, number>;
@@ -9,10 +13,19 @@ export class MatrixActivityTracker {
         this.lastActiveTime = new Map();
     }
 
+    /**
+     * This should be called when a user has performed an action to bump their locally stored active time.
+     * @param userId The userId of a user who performed an action.
+     */
     public bumpLastActiveTime(userId: string) {
         this.lastActiveTime.set(userId, Date.now());
     }
 
+    /**
+     * Determine if a user is online or offline using a range of metrics.
+     * @param userId The userId to check
+     * @param maxTimeMs The maximum time a user may be inactive for before they are considered offline.
+     */
     public async isUserOnline(userId: string, maxTimeMs: number): Promise<{offline: boolean, inactiveMs: number}> {
         if (this.canUseWhois === null) {
             try {
