@@ -1,6 +1,6 @@
 {
   "name": "matrix-lastactive",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A small javascript utility to determine when a user was last active.",
   "main": "lib/lib.js",
   "types": "lib/lib.d.ts",
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/Half-Shot/matrix-lastactive#readme",
   "dependencies": {
-    "matrix-bot-sdk": "turt2live/matrix-js-bot-sdk#develop"
+    "matrix-bot-sdk": "0.4.0-beta.2"
   },
   "devDependencies": {
     "typescript": "^3.5.2"
