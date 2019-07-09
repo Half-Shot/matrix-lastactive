@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import { MatrixActivityTracker } from "./lib";
 import { MatrixPresence, WhoisInfo } from "matrix-bot-sdk";
-import { on } from "cluster";
 
 function createTracker(canUseWhois: boolean = false, presence?: MatrixPresence, whois?: WhoisInfo) {
     const tracker: any = new MatrixActivityTracker("https://localhost", "ABCDE", "example.com", !!presence);
