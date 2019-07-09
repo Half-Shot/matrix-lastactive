@@ -20,6 +20,10 @@ export class MatrixActivityTracker {
         this.lastActiveTime = new Map();
     }
 
+    public get usingWhois() {
+        return this.canUseWhois;
+    }
+
     /**
      * This should be called when a user has performed an action to bump their locally stored active time.
      * @param userId The userId of a user who performed an action.
@@ -36,6 +40,7 @@ export class MatrixActivityTracker {
     public async isUserOnline(userId: string, maxTimeMs: number): Promise<{online: boolean, inactiveMs: number}> {
         if (this.canUseWhois === null) {
             try {
+                // This endpoint will only 200 for users who are admins.
                 await this.client.doRequest("GET", "/_synapse/admin/v1/server_version");
                 this.canUseWhois = true;
             } catch (ex) {
@@ -70,12 +75,12 @@ export class MatrixActivityTracker {
         if (!this.canUseWhois || userId.split(":")[1] !== this.serverName) {
             // The user is remote, we don't have any presence for them and they've 
             // not interacted with us so we are going to have to treat them as offline.
-            return {online: true, inactiveMs: -1};
+            return {online: false, inactiveMs: -1};
         }
 
         const whois = await this.client.adminApis.whoisUser(userId);
         const connections = Object.values(whois.devices).flatMap((device) => device.sessions.flatMap((session => session.connections)));
-        const lastSeen = connections.sort((conA, conB) => conA.last_seen - conB.last_seen)[0].last_seen;
-        return {online: (now - lastSeen) < maxTimeMs, inactiveMs: now - lastSeen};
+        const bestConnection = connections.sort((conA, conB) => conB.last_seen - conA.last_seen)[0];
+        return {online: (now - bestConnection.last_seen) < maxTimeMs, inactiveMs: now - bestConnection.last_seen};
     }
 }

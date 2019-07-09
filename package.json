@@ -1,6 +1,6 @@
 {
   "name": "matrix-lastactive",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A small javascript utility to determine when a user was last active.",
   "main": "lib/lib.js",
   "types": "lib/lib.d.ts",
@@ -10,7 +10,7 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --reporter list --ui bdd lib/test_lib.js"
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,11 @@
   },
   "homepage": "https://github.com/Half-Shot/matrix-lastactive#readme",
   "dependencies": {
-    "matrix-bot-sdk": "0.4.0-beta.2"
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.7",
+    "chai": "^4.2.0",
+    "matrix-bot-sdk": "0.4.0-beta.2",
+    "mocha": "^6.1.4"
   },
   "devDependencies": {
     "typescript": "^3.5.2"
