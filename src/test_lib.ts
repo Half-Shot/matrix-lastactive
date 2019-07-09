@@ -5,11 +5,11 @@ import { MatrixPresence, WhoisInfo } from "matrix-bot-sdk";
 function createTracker(canUseWhois: boolean = false, presence?: MatrixPresence, whois?: WhoisInfo) {
     const tracker: any = new MatrixActivityTracker("https://localhost", "ABCDE", "example.com", !!presence);
     tracker.client.doRequest = async function (method: string, path: string) {
-        if (method === "GET" && path === "/_synapse/admin/v1/server_version") {
+        if (method === "POST" && path === "/_synapse/admin/v1/send_server_notice") {
             if (canUseWhois) {
-                return {};
+                throw {statusCode: 400}
             }
-            throw Error("canUseWhois is false");
+            throw {statusCode: 403}; // 403 - not an admin
         }
         if (method === "GET" && path.startsWith("/_matrix/client/r0/presence/")) {
             if (!presence) {

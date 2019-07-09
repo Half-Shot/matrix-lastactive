@@ -40,11 +40,12 @@ export class MatrixActivityTracker {
     public async isUserOnline(userId: string, maxTimeMs: number): Promise<{online: boolean, inactiveMs: number}> {
         if (this.canUseWhois === null) {
             try {
-                // This endpoint will only 200 for users who are admins.
-                await this.client.doRequest("GET", "/_synapse/admin/v1/server_version");
-                this.canUseWhois = true;
+                // HACK: Synapse exposes no way to directly determine if a user is an admin, so we use this auth check.
+                await this.client.doRequest("POST", "/_synapse/admin/v1/send_server_notice", null, {});
+                this.canUseWhois = false; // This should never succeed, but prevent it from trying anyway.
             } catch (ex) {
-                this.canUseWhois = false;
+                // We expect this to fail
+                this.canUseWhois = (ex.statusCode !== 403);
             }
         }
 
