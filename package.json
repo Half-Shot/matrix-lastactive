@@ -1,6 +1,6 @@
 {
   "name": "matrix-lastactive",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A small javascript utility to determine when a user was last active.",
   "main": "lib/lib.js",
   "types": "lib/lib.d.ts",
