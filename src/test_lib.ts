@@ -3,7 +3,13 @@ import { MatrixActivityTracker } from "./lib";
 import { MatrixPresence, WhoisInfo } from "matrix-bot-sdk";
 
 function createTracker(canUseWhois: boolean = false, presence?: MatrixPresence, whois?: WhoisInfo) {
-    const tracker: any = new MatrixActivityTracker("https://localhost", "ABCDE", "example.com", !!presence);
+    const tracker: any = new MatrixActivityTracker({
+        homeserverUrl: "https://localhost",
+        accessToken: "ABCDE",
+        serverName: "example.com",
+        usePresence: !!presence,
+        defaultOnline: false,
+    });
     tracker.client.doRequest = async function (method: string, path: string) {
         if (method === "POST" && path === "/_synapse/admin/v1/send_server_notice") {
             if (canUseWhois) {
@@ -30,7 +36,12 @@ function createTracker(canUseWhois: boolean = false, presence?: MatrixPresence, 
 
 describe("MatrixActivityTracker", () => {
     it("constructs", () => {
-        const tracker = new MatrixActivityTracker("https://localhost", "ABCDE", "example.com", false);
+        const tracker: any = new MatrixActivityTracker({
+            homeserverUrl: "https://localhost",
+            accessToken: "ABCDE",
+            serverName: "example.com",
+            defaultOnline: false,
+        });
     });
     describe("isUserOnline", () => {
         it("will enable whois if it can't be used", async () => {

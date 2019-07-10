@@ -6,6 +6,16 @@ const DummyLogger = {
     error: () => {},
     debug: () => {},
 };
+
+interface MatrixActivityTrackerOpts {
+    homeserverUrl: string;
+    accessToken: string;
+    serverName: string;
+    defaultOnline: boolean;
+    usePresence?: boolean;
+    logger?: ILogger;
+}
+
 /**
  * This class provides a "one stop shop" to determine if a user is online. It will use a combination of a 
  * local cache, presence endpoints and admin APIs in that order.
@@ -14,9 +24,10 @@ export class MatrixActivityTracker {
     private client: MatrixClient;
     private lastActiveTime: Map<string, number>;
     private canUseWhois: boolean|null = null;
-    constructor(homeserverUrl: string, accessToken: string, private serverName: string, private canUsePresence: boolean = true, logger: ILogger = DummyLogger) {
-        LogService.setLogger(logger);
-        this.client = new MatrixClient(homeserverUrl, accessToken);
+    constructor(private opts: MatrixActivityTrackerOpts) {
+        LogService.setLogger(opts.logger ? opts.logger : DummyLogger);
+        opts.usePresence = opts.usePresence !== undefined ? opts.usePresence : true;
+        this.client = new MatrixClient(opts.homeserverUrl, opts.accessToken);
         this.lastActiveTime = new Map();
     }
 
@@ -61,7 +72,7 @@ export class MatrixActivityTracker {
         // The user hasn't interacted with the bridge, or it was too long ago.
         // Check the user's presence.
         try {
-            if (this.canUsePresence) {
+            if (this.opts.usePresence) {
                 const presence = await this.client.getPresenceStatusFor(userId);
                 if (presence.currently_active || presence.presence === "online") {
                     return {online: true, inactiveMs: presence.last_active_ago || 0};
@@ -73,10 +84,10 @@ export class MatrixActivityTracker {
             // Failed to get presence, going to fallback to admin api.
         }
 
-        if (!this.canUseWhois || userId.split(":")[1] !== this.serverName) {
+        if (!this.canUseWhois || userId.split(":")[1] !== this.opts.serverName) {
             // The user is remote, we don't have any presence for them and they've 
             // not interacted with us so we are going to have to treat them as offline.
-            return {online: false, inactiveMs: -1};
+            return {online: this.opts.defaultOnline, inactiveMs: -1};
         }
 
         const whois = await this.client.adminApis.whoisUser(userId);
