@@ -7,12 +7,33 @@ const DummyLogger = {
     debug: () => {},
 };
 
+
 interface MatrixActivityTrackerOpts {
+    /**
+     * Matrix homeserver url
+     * @example https://matrix.org
+     */
     homeserverUrl: string;
+    /**
+     * Access token for making requests
+     */
     accessToken: string;
+    /**
+     * Matrix server name. Used for determining local and remote users.
+     * @example matrix.org
+     */
     serverName: string;
+    /**
+     * Should the tracker assume offline or online if it doesn't have enough information.
+     */
     defaultOnline: boolean;
+    /**
+     * Should presence be used. Set to false if the homeserver has presence disabled.
+     */
     usePresence?: boolean;
+    /**
+     * matrix-bot-sdk logger. By default this will not log.
+     */
     logger?: ILogger;
 }
 
