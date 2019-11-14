@@ -1,4 +1,4 @@
-import { MatrixClient, AdminApis, LogService, ILogger } from "matrix-bot-sdk";
+import { MatrixClient, LogService, ILogger } from "matrix-bot-sdk";
 
 const DummyLogger = {
     info: () => {},
@@ -6,7 +6,6 @@ const DummyLogger = {
     error: () => {},
     debug: () => {},
 };
-
 
 interface MatrixActivityTrackerOpts {
     /**
@@ -62,6 +61,10 @@ export class MatrixActivityTracker {
      */
     public bumpLastActiveTime(userId: string) {
         this.lastActiveTime.set(userId, Date.now());
+    }
+
+    public setLastActiveTime(userId: string, ts: number) {
+        this.lastActiveTime.set(userId, ts);
     }
 
     /**
