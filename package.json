@@ -1,6 +1,6 @@
 {
   "name": "matrix-lastactive",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A small javascript utility to determine when a user was last active.",
   "main": "lib/lib.js",
   "types": "lib/lib.d.ts",
@@ -8,7 +8,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "build": "tsc",
     "test": "mocha --reporter list --ui bdd lib/test_lib.js"
   },
