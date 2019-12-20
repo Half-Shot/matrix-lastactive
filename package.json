@@ -23,13 +23,13 @@
   },
   "homepage": "https://github.com/Half-Shot/matrix-lastactive#readme",
   "dependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.7",
-    "chai": "^4.2.0",
-    "matrix-bot-sdk": "0.4.0-beta.13",
-    "mocha": "^6.1.4"
+    "matrix-bot-sdk": "0.4.0"
   },
   "devDependencies": {
-    "typescript": "^3.5.2"
+    "typescript": "^3.5.2",
+    "mocha": "^6.1.4",
+    "chai": "^4.2.0",
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.7"
   }
 }
