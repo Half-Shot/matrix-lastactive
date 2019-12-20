@@ -23,7 +23,7 @@ function createTracker(canUseWhois: boolean = false, presence?: PresenceEventCon
             if (!presence) {
                 throw Error("Presence is disabled");
             }
-            return new Presence(presence);
+            return presence;
         }
         if (method === "GET" && path.startsWith("/_matrix/client/r0/admin/whois")) {
             if (!whois) {

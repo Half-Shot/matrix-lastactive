@@ -102,7 +102,7 @@ export class MatrixActivityTracker {
                 const presence = await this.client.getPresenceStatusFor(userId);
                 if (presence.currentlyActive || presence.state === "online") {
                     return {online: true, inactiveMs: presence.lastActiveAgo || 0};
-                } else if (presence.lastActiveAgo !== undefined && presence.lastActiveAgo > maxTimeMs) {
+                } else if (presence.lastActiveAgo && presence.lastActiveAgo > maxTimeMs) {
                     return {online: false, inactiveMs: presence.lastActiveAgo};
                 } // Otherwise, we can't know conclusively.
             }
