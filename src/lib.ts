@@ -71,8 +71,10 @@ export class MatrixActivityTracker {
      * Determine if a user is online or offline using a range of metrics.
      * @param userId The userId to check
      * @param maxTimeMs The maximum time a user may be inactive for before they are considered offline.
+     * @param defaultOnline Should the user be online or offline if no data is found. Defaults to `opts.defaultOnline`
      */
-    public async isUserOnline(userId: string, maxTimeMs: number): Promise<{online: boolean, inactiveMs: number}> {
+    public async isUserOnline(userId: string, maxTimeMs: number, defaultOnline?: boolean): Promise<{online: boolean, inactiveMs: number}> {
+        defaultOnline = defaultOnline === undefined ? this.opts.defaultOnline : defaultOnline;
         if (this.canUseWhois === null) {
             try {
                 // HACK: Synapse exposes no way to directly determine if a user is an admin, so we use this auth check.
@@ -98,10 +100,10 @@ export class MatrixActivityTracker {
         try {
             if (this.opts.usePresence) {
                 const presence = await this.client.getPresenceStatusFor(userId);
-                } else if (presence.last_active_ago !== undefined && presence.last_active_ago > maxTimeMs) {
-                    return {online: false, inactiveMs: presence.last_active_ago};
                 if (presence.currentlyActive || presence.state === "online") {
                     return {online: true, inactiveMs: presence.lastActiveAgo || 0};
+                } else if (presence.lastActiveAgo !== undefined && presence.lastActiveAgo > maxTimeMs) {
+                    return {online: false, inactiveMs: presence.lastActiveAgo};
                 } // Otherwise, we can't know conclusively.
             }
         } catch {
@@ -111,7 +113,7 @@ export class MatrixActivityTracker {
         if (!this.canUseWhois || userId.split(":")[1] !== this.opts.serverName) {
             // The user is remote, we don't have any presence for them and they've 
             // not interacted with us so we are going to have to treat them as offline.
-            return {online: this.opts.defaultOnline, inactiveMs: -1};
+            return {online: defaultOnline, inactiveMs: -1};
         }
 
         const whois = await this.client.adminApis.whoisUser(userId);

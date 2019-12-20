@@ -1,16 +1,16 @@
 import { expect } from "chai";
 import { MatrixActivityTracker } from "./lib";
-import { MatrixPresence, WhoisInfo } from "matrix-bot-sdk";
+import { WhoisInfo, PresenceEventContent, Presence } from "matrix-bot-sdk";
 
 const TEST_USER = "@foobar:example.com";
 
-function createTracker(canUseWhois: boolean = false, presence?: MatrixPresence, whois?: WhoisInfo) {
+function createTracker(canUseWhois: boolean = false, presence?: PresenceEventContent, whois?: WhoisInfo, defaultOnline: boolean = false) {
     const tracker: any = new MatrixActivityTracker({
         homeserverUrl: "https://localhost",
         accessToken: "ABCDE",
         serverName: "example.com",
         usePresence: !!presence,
-        defaultOnline: false,
+        defaultOnline,
     });
     tracker.client.doRequest = async function (method: string, path: string) {
         if (method === "POST" && path === "/_synapse/admin/v1/send_server_notice") {
@@ -23,7 +23,7 @@ function createTracker(canUseWhois: boolean = false, presence?: MatrixPresence, 
             if (!presence) {
                 throw Error("Presence is disabled");
             }
-            return presence;
+            return new Presence(presence);
         }
         if (method === "GET" && path.startsWith("/_matrix/client/r0/admin/whois")) {
             if (!whois) {
@@ -68,7 +68,7 @@ describe("MatrixActivityTracker", () => {
         it("will return online if presence is currently active", async () => {
             const {tracker} = createTracker(false, {
                 currently_active: true,
-                presence: "online"
+                presence: "online",
             });
             const res = await tracker.isUserOnline(TEST_USER, 1000);
             expect(res.online).to.be.true;
@@ -177,6 +177,30 @@ describe("MatrixActivityTracker", () => {
 
             const res = await tracker.isUserOnline(TEST_USER, 1000);
             expect(res.online).to.be.false;
+        });
+        it("will default to offline if configured to", async () => {
+            const {tracker} = createTracker(false, undefined, undefined, false);
+            const res = await tracker.isUserOnline(TEST_USER, 1000);
+            expect(res.online).to.be.false;
+            expect(res.inactiveMs).to.equal(-1);
+        });
+        it("will default to online if configured to", async () => {
+            const {tracker} = createTracker(false, undefined, undefined, true);
+            const res = await tracker.isUserOnline(TEST_USER, 1000);
+            expect(res.online).to.be.true;
+            expect(res.inactiveMs).to.equal(-1);
+        });
+        it("will be online if defaultOnline is overriden", async () => {
+            const {tracker} = createTracker(false, undefined, undefined, false);
+            const res = await tracker.isUserOnline(TEST_USER, 1000, true);
+            expect(res.online).to.be.true;
+            expect(res.inactiveMs).to.equal(-1);
+        });
+        it("will be offline if defaultOnline is overriden", async () => {
+            const {tracker} = createTracker(false, undefined, undefined, true);
+            const res = await tracker.isUserOnline(TEST_USER, 1000, false);
+            expect(res.online).to.be.false;
+            expect(res.inactiveMs).to.equal(-1);
         });
     })
 });
