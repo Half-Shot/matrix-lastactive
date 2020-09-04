@@ -83,7 +83,6 @@ export class MatrixActivityTracker {
             } catch (ex) {
                 // We expect this to fail
                 this.canUseWhois = (ex.statusCode === 200 || ex.statusCode === 400);
-                this.canUseWhois = (ex.statusCode !== 403);
             }
         }
 
