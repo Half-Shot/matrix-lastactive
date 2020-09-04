@@ -13,7 +13,7 @@ function createTracker(canUseWhois: boolean = false, presence?: PresenceEventCon
         defaultOnline,
     });
     tracker.client.doRequest = async function (method: string, path: string) {
-        if (method === "POST" && path === "/_synapse/admin/v1/send_server_notice") {
+        if (method === "GET" && path === "/_synapse/admin/v1/users/@foo:bar/admin") {
             if (canUseWhois) {
                 throw {statusCode: 400}
             }

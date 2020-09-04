@@ -78,10 +78,11 @@ export class MatrixActivityTracker {
         if (this.canUseWhois === null) {
             try {
                 // HACK: Synapse exposes no way to directly determine if a user is an admin, so we use this auth check.
-                await this.client.doRequest("POST", "/_synapse/admin/v1/send_server_notice", null, {});
+                await this.client.doRequest("GET", "/_synapse/admin/v1/users/@foo:bar/admin");
                 this.canUseWhois = false; // This should never succeed, but prevent it from trying anyway.
             } catch (ex) {
                 // We expect this to fail
+                this.canUseWhois = (ex.statusCode === 200 || ex.statusCode === 400);
                 this.canUseWhois = (ex.statusCode !== 403);
             }
         }
@@ -109,16 +110,21 @@ export class MatrixActivityTracker {
         } catch {
             // Failed to get presence, going to fallback to admin api.
         }
-
-        if (!this.canUseWhois || userId.split(":")[1] !== this.opts.serverName) {
-            // The user is remote, we don't have any presence for them and they've 
-            // not interacted with us so we are going to have to treat them as offline.
-            return {online: defaultOnline, inactiveMs: -1};
+        
+        const canUseWhois = this.canUseWhois && userId.split(":")[1] === this.opts.serverName;
+        if (canUseWhois) {
+            try {
+                const whois = await this.client.adminApis.whoisUser(userId);
+                const connections = Object.values(whois.devices).flatMap((device) => device.sessions.flatMap((session => session.connections)));
+                const bestConnection = connections.sort((conA, conB) => conB.last_seen - conA.last_seen)[0];
+                return {online: (now - bestConnection.last_seen) < maxTimeMs, inactiveMs: now - bestConnection.last_seen};
+            } catch (ex) {
+                // Failed to use whois, fall back.
+            }
         }
 
-        const whois = await this.client.adminApis.whoisUser(userId);
-        const connections = Object.values(whois.devices).flatMap((device) => device.sessions.flatMap((session => session.connections)));
-        const bestConnection = connections.sort((conA, conB) => conB.last_seen - conA.last_seen)[0];
-        return {online: (now - bestConnection.last_seen) < maxTimeMs, inactiveMs: now - bestConnection.last_seen};
+        // The user is remote, we don't have any presence for them and they've 
+        // not interacted with us so we are going to have to treat them as offline.
+        return {online: defaultOnline, inactiveMs: -1};
     }
 }
