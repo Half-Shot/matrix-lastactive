@@ -1,3 +1,8 @@
+# ⚠️ Deprecated ⚠️
+
+This functionality has now been merged into [matrix-appservice-bridge](https://github.com/matrix-org/matrix-appservice-bridge) [here](https://github.com/matrix-org/matrix-appservice-bridge/blob/develop/src/components/activity-tracker.ts). Users wishing to track activity can import that component into their project freely.
+
+
 # matrix-lastactive
 
 A small utility to determine when a user was last active.
